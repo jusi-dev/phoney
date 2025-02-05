@@ -12,6 +12,7 @@ defmodule PhoneyWeb.ContactsLive.Index do
       |> stream(:contacts, [])
       |> assign(:page, 1)
       |> assign(:search_term, "")
+      |> assign(:selected_contact, nil)
       |> list_contacts()
     }
   end
@@ -64,6 +65,27 @@ defmodule PhoneyWeb.ContactsLive.Index do
       socket
       |> assign(:search_term, search_term)
       |> assign(:page, 1)
+      |> list_contacts()
+    }
+  end
+
+  def handle_event("select-contact", %{"contact_id" => "nil"}, socket) do
+    {:noreply,
+      socket
+      |> assign(:selected_contact, nil)
+      |> list_contacts()
+    }
+  end
+
+  def handle_event("select-contact", %{"contact_id" => contact_id}, socket) do
+    contact = Phoney.Contacts.Contact
+              |> Ash.Query.filter(id: contact_id)
+              |> Ash.read!(domain: Phoney.Contacts)
+              |> then(fn [contact] -> contact end)
+
+    {:noreply,
+      socket
+      |> assign(:selected_contact, contact)
       |> list_contacts()
     }
   end
