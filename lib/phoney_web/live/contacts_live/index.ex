@@ -10,6 +10,7 @@ defmodule PhoneyWeb.ContactsLive.Index do
     {:ok,
       socket
       |> stream(:contacts, [])
+      |> stream(:favorites, [])
       |> assign(:page, 1)
       |> assign(:search_term, "")
       |> assign(:selected_contact, nil)
@@ -57,8 +58,18 @@ defmodule PhoneyWeb.ContactsLive.Index do
       Map.put(contact, :is_favorite, MapSet.member?(favorite_contact_ids, contact.id))
     end)
 
+    favorited_contacts = favorites |> Enum.map(fn favorite ->
+      Phoney.Contacts.Contact
+      |> Ash.Query.filter(id: favorite.contact_id)
+      |> Ash.read!(domain: Phoney.Contacts)
+      |> then(fn [contact] -> contact end)
+    end)
+
+    IO.inspect(favorited_contacts)
+
     socket
     |> assign(:total_pages, total_pages)
+    |> stream(:favorites, favorited_contacts)
     |> stream(:contacts, contacts_with_favorites, reset: true)
   end
 
