@@ -44,9 +44,22 @@ defmodule PhoneyWeb.ContactsLive.Index do
       |> Phoney.Contacts.read!()
       |> Map.get(:results)
 
+    # Get favorites for all contacts on current page
+    favorites = Phoney.Contacts.Favorite
+    |> Ash.Query.filter(contact_id: [in: paginated_contacts |> Enum.map(& &1.id)])
+    |> Phoney.Contacts.read!()
+
+    # Convert to set for O(1) lookup
+    favorite_contact_ids = favorites |> Enum.map(& &1.contact_id) |> MapSet.new()
+
+    # Add is_favorite field to each contact
+    contacts_with_favorites = paginated_contacts |> Enum.map(fn contact ->
+      Map.put(contact, :is_favorite, MapSet.member?(favorite_contact_ids, contact.id))
+    end)
+
     socket
     |> assign(:total_pages, total_pages)
-    |> stream(:contacts, paginated_contacts, reset: true)
+    |> stream(:contacts, contacts_with_favorites, reset: true)
   end
 
   defp filter_contacts(query, search_term) do
@@ -86,6 +99,32 @@ defmodule PhoneyWeb.ContactsLive.Index do
     {:noreply,
       socket
       |> assign(:selected_contact, contact)
+      |> list_contacts()
+    }
+  end
+
+  def handle_event("toggle-favorite", %{"contact_id" => contact_id}, socket) do
+    favorites = Phoney.Contacts.Favorite
+                        |> Ash.Query.filter(contact_id: contact_id)
+                        |> Ash.Query.limit(1)
+                        |> Ash.read!(domain: Phoney.Contacts)
+
+    IO.inspect(favorites)
+
+    case favorites do
+      [] ->
+        Phoney.Contacts.Favorite
+        |> Ash.Changeset.for_create(:create, %{contact_id: contact_id})
+        |> Phoney.Contacts.create!()
+
+      [favorite | _] ->
+        favorite
+        |> Ash.Changeset.for_destroy(:destroy)
+        |> Phoney.Contacts.destroy!()
+    end
+
+    {:noreply,
+      socket
       |> list_contacts()
     }
   end

@@ -3,6 +3,7 @@ defmodule Phoney.Contacts do
 
   resources do
     resource Phoney.Contacts.Contact
+    resource Phoney.Contacts.Favorite
   end
 
   def read!(query \\ GistAsh.Gists.Gist, opts \\ []) do
@@ -14,5 +15,10 @@ defmodule Phoney.Contacts do
   def create!(changeset, opts \\ []) do
     changeset
     |> Ash.create!(domain: __MODULE__, actor: Keyword.get(opts, :actor))
+  end
+
+  def destroy!(changeset, opts \\ []) do
+    changeset
+    |> Ash.destroy!(domain: __MODULE__, actor: Keyword.get(opts, :actor))
   end
 end
