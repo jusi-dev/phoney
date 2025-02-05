@@ -1,0 +1,22 @@
+<.header>
+    <h1>Contacts</h1>
+</.header>
+
+<div class="flex flex-col mt-10 gap-y-2">
+    <div class="" :for={{_id, contact} <- @streams.contacts}>
+        <.contact_list_item contact={contact} />
+    </div>
+
+    <div class="flex justify-between">
+        <%= if @page > 1 do %>
+            <.button phx-click="previous-page">
+                Previous Page
+            </.button>
+        <% end %>
+        <%= if @page < @total_pages do %>
+            <.button phx-click="next-page">
+                Next Page
+            </.button>
+        <% end %>
+    </div>
+</div>
