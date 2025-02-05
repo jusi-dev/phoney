@@ -14,7 +14,8 @@
 </form>
 
 <%= if @selected_contact != nil do %>
-    <div class="fixed left-0 top-0 w-screen h-screen bg-black/50" phx-click="select-contact" phx-value-contact_id="nil">
+    <div class="fixed left-0 top-0 w-screen h-screen">
+        <div class="absolute w-[50%] h-screen bg-black/50 left-0" phx-click="select-contact" phx-value-contact_id="nil"></div>
         <div class="absolute w-[50%] h-screen bg-blue-200 right-0 flex flex-col justify-center items-center">
             <div class="flex gap-x-2 text-2xl font-semibold">
                 <div><%= @selected_contact.first_name %></div>
