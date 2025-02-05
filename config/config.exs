@@ -47,7 +47,7 @@ config :spark,
 config :phoney,
   ecto_repos: [Phoney.Repo],
   generators: [timestamp_type: :utc_datetime],
-  ash_domains: [Phoney.Accounts]
+  ash_domains: [Phoney.Accounts, Phoney.Contacts]
 
 # Configures the endpoint
 config :phoney, PhoneyWeb.Endpoint,

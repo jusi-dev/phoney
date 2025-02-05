@@ -10,4 +10,9 @@ defmodule Phoney.Contacts do
     |> Ash.Query.for_read(:read)
     |> Ash.read!(domain: __MODULE__, actor: Keyword.get(opts, :actor))
   end
+
+  def create!(changeset, opts \\ []) do
+    changeset
+    |> Ash.create!(domain: __MODULE__, actor: Keyword.get(opts, :actor))
+  end
 end
