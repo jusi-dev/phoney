@@ -1,6 +1,17 @@
 <.header>
-    <h1>Contacts</h1>
+    <h1 class="text-center text-6xl font-bold text-blue-400">Phoney</h1>
 </.header>
+
+<form phx-submit="search" class="mb-4 mt-24">
+    <p class="text-center">Search for Contact</p>
+    <input type="text" 
+           name="search" 
+           placeholder="Search by name or phone"
+           class="px-4 py-2 border rounded-lg w-full mt-2"
+           value={@search_term}
+           phx-debounce="300"
+    />
+</form>
 
 <div class="flex flex-col mt-10 gap-y-2">
     <div class="" :for={{_id, contact} <- @streams.contacts}>
