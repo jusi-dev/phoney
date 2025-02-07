@@ -11,12 +11,18 @@ defmodule Phoney.Contacts.Contact do
 
   attributes do
     uuid_primary_key :id
-    attribute :first_name, :string
-    attribute :last_name, :string
-    attribute :email, :string
-    attribute :phone_number, :string
-    attribute :address, :string
+
+    attribute :first_name, :string, public?: true
+    attribute :last_name, :string, public?: true
+    attribute :email, :string, public?: true
+    attribute :phone_number, :string, public?: true
+    attribute :address, :string, public?: true
+
     timestamps()
+  end
+
+  code_interface do
+    define :upsert, action: :upsert
   end
 
   identities do
@@ -24,12 +30,11 @@ defmodule Phoney.Contacts.Contact do
   end
 
   actions do
-    defaults [:read, :create, :update, :destroy]
+    defaults [:read, :destroy, create: :*, update: :*]
 
-    create :upsert_from_api do
+    create :upsert do
       argument :firstname, :string
       argument :lastname, :string
-      argument :email, :string
       argument :phone, :string
 
       argument :address, :map do
@@ -44,16 +49,19 @@ defmodule Phoney.Contacts.Contact do
 
       change fn changeset, _context ->
         address = Ash.Changeset.get_argument(changeset, :address)
-        formatted_address = "#{address.street}, #{address.city}, #{address.zipcode}, #{address.country}"
+        street  = Map.get(address, "street")  || Map.get(address, :street)
+        city    = Map.get(address, "city")    || Map.get(address, :city)
+        zipcode = Map.get(address, "zipcode") || Map.get(address, :zipcode)
+        country = Map.get(address, "country") || Map.get(address, :country)
+        formatted_address = "#{street}, #{city}, #{zipcode}, #{country}"
         Ash.Changeset.change_attribute(changeset, :address, formatted_address)
       end
 
       change set_attribute(:first_name, arg(:firstname))
       change set_attribute(:last_name, arg(:lastname))
       change set_attribute(:phone_number, arg(:phone))
-      change set_attribute(:email, arg(:email))
 
-      accept [:first_name, :last_name, :email, :phone_number, :address]
+      accept [:email]
     end
   end
 
