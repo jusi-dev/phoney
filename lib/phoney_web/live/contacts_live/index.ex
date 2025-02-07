@@ -30,13 +30,13 @@ defmodule PhoneyWeb.ContactsLive.Index do
       base_query
     end
 
-    # Get total count from paginated results
-    contacts_page = query
+    # Get all contacts
+    total_contacts = query
       |> Ash.Query.sort(last_name: :asc)
       |> Phoney.Contacts.read!()
 
-    total_contacts = contacts_page |> length()
-    total_pages = div(total_contacts, 20) + if(rem(total_contacts, 20) > 0, do: 1, else: 0)
+    total_contacts_length = total_contacts |> length()
+    total_pages = div(total_contacts_length, 20) + if(rem(total_contacts_length, 20) > 0, do: 1, else: 0)
 
     # Get paginated results
     paginated_contacts = query
@@ -64,8 +64,6 @@ defmodule PhoneyWeb.ContactsLive.Index do
       |> Ash.read!(domain: Phoney.Contacts)
       |> then(fn [contact] -> contact end)
     end)
-
-    IO.inspect(favorited_contacts)
 
     socket
     |> assign(:total_pages, total_pages)
