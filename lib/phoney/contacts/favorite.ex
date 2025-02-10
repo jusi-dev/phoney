@@ -28,14 +28,6 @@ defmodule Phoney.Contacts.Favorite do
   actions do
     defaults [:read, :destroy, create: :*, update: :*]
 
-    # create :create do
-    #   primary? true
-
-    #   change set_attribute(:contact_id, arg(:contact_id))
-
-    #   accept [:contact_id]
-    # end
-
     read :get_all_by do
       argument :filter_by, :atom, allow_nil?: false
       argument :filter_value, :string, allow_nil?: false
