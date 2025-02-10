@@ -23,6 +23,13 @@ defmodule Phoney.Contacts.Contact do
 
   code_interface do
     define :upsert, action: :upsert
+    define :read
+    define :create
+    define :get_all_and_sort_by, action: :sort_by, args: [:sort_by, :direction]
+    define :paginate_and_sort_by, action: :paginate_and_sort_by, args: [:sort_by, :direction, :page, :page_size]
+    define :get_all_by, action: :get_all_by, args: [:filter_by, :filter_value]
+    define :get_by_id, action: :read, get_by: [:id]
+    define :search, action: :search_contacts, args: [:search_term, :page, :page_size]
   end
 
   identities do
@@ -31,6 +38,60 @@ defmodule Phoney.Contacts.Contact do
 
   actions do
     defaults [:read, :destroy, create: :*, update: :*]
+
+    read :sort_by do
+      argument :sort_by, :atom, allow_nil?: true, default: :last_name
+      argument :direction, :atom, allow_nil?: true, default: :asc
+
+      prepare fn query, _context ->
+        Ash.Query.sort(query, last_name: :asc)
+      end
+    end
+
+    read :paginate_and_sort_by do
+      argument :sort_by, :atom, allow_nil?: true, default: :last_name
+      argument :direction, :atom, allow_nil?: true, default: :asc
+      argument :page, :integer, allow_nil?: false, default: 1
+      argument :page_size, :integer, allow_nil?: false, default: 20
+      pagination offset?: true, keyset?: true, required?: false
+
+      prepare fn query, context ->
+        # Get actual values from arguments
+        page = Ash.Query.get_argument(query, :page)
+        page_size = Ash.Query.get_argument(query, :page_size)
+        sort_by = Ash.Query.get_argument(query, :sort_by)
+
+        query
+        |> Ash.Query.page(limit: page_size, offset: (page - 1) * page_size)
+        |> Ash.Query.sort([{sort_by, :asc}])
+      end
+    end
+
+    read :get_all_by do
+      argument :filter_by, :atom, allow_nil?: false
+      argument :filter_value, :string, allow_nil?: false
+
+      filter expr(^arg(:filter_by) == ^arg(:filter_value))
+    end
+
+    read :search_contacts do
+      argument :search_term, :string, allow_nil?: false
+      argument :page, :integer, allow_nil?: false, default: 1
+      argument :page_size, :integer, allow_nil?: true, default: 20
+
+      pagination offset?: true,
+            keyset?: false,
+            required?: true,
+            default_limit: 20
+
+      filter expr(
+        or: [
+              {:first_name, contains: ^arg(:search_term)},
+              {:last_name, contains: ^arg(:search_term)},
+              {:phone_number, contains: ^arg(:search_term)}
+            ]
+      )
+    end
 
     create :upsert do
       argument :firstname, :string

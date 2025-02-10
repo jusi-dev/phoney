@@ -11,7 +11,7 @@ defmodule Phoney.Contacts.Favorite do
 
   attributes do
     uuid_primary_key :id
-    attribute :contact_id, :uuid
+    attribute :contact_id, :uuid, public?: true
     timestamps()
   end
 
@@ -19,16 +19,20 @@ defmodule Phoney.Contacts.Favorite do
     belongs_to :contact, Phoney.Contacts.Contact
   end
 
+  code_interface do
+    define :get_all_by, action: :get_all_by, args: [:filter_by, :filter_value]
+    define :create
+    define :destroy
+  end
+
   actions do
-    defaults [:read, :update, :destroy]
+    defaults [:read, :destroy, create: :*, update: :*]
 
-    create :create do
-      primary? true
-      argument :contact_id, :uuid
+    read :get_all_by do
+      argument :filter_by, :atom, allow_nil?: false
+      argument :filter_value, :string, allow_nil?: false
 
-      change set_attribute(:contact_id, arg(:contact_id))
-
-      accept [:contact_id]
+      filter expr(^arg(:filter_by) == ^arg(:filter_value))
     end
   end
 

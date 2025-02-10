@@ -24,8 +24,6 @@ defmodule Phoney.Api.SyncContacts do
       }
     }
 
-    Phoney.Contacts.Contact
-    |> Ash.Changeset.for_create(:upsert_from_api, params)
-    |> Phoney.Contacts.create!()
+    Phoney.Contacts.Contact.upsert!(params)
   end
 end
