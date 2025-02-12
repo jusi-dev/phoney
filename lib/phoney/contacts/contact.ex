@@ -26,7 +26,7 @@ defmodule Phoney.Contacts.Contact do
     define :read
     define :create
     define :get_all_and_sort_by, action: :sort_by, args: [:sort_by, :direction]
-    define :paginate_and_sort_by, action: :paginate_and_sort_by, args: [:sort_by, :direction, :page, :page_size]
+    define :paginate_and_sort_by, action: :paginate_and_sort_by, args: [:sort_by, :direction]
     define :get_all_by, action: :get_all_by, args: [:filter_by, :filter_value]
     define :get_by_id, action: :read, get_by: [:id]
     define :search, action: :search_contacts, args: [:search_term, :page, :page_size]
@@ -51,20 +51,10 @@ defmodule Phoney.Contacts.Contact do
     read :paginate_and_sort_by do
       argument :sort_by, :atom, allow_nil?: true, default: :last_name
       argument :direction, :atom, allow_nil?: true, default: :asc
-      argument :page, :integer, allow_nil?: false, default: 1
-      argument :page_size, :integer, allow_nil?: false, default: 20
+
       pagination offset?: true, keyset?: true, required?: false
 
-      prepare fn query, context ->
-        # Get actual values from arguments
-        page = Ash.Query.get_argument(query, :page)
-        page_size = Ash.Query.get_argument(query, :page_size)
-        sort_by = Ash.Query.get_argument(query, :sort_by)
-
-        query
-        |> Ash.Query.page(limit: page_size, offset: (page - 1) * page_size)
-        |> Ash.Query.sort([{sort_by, :asc}])
-      end
+      prepare build(sort: [{arg(:sort_by), arg(:direction)}])
     end
 
     read :get_all_by do
