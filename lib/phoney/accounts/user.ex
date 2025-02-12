@@ -43,6 +43,19 @@ defmodule Phoney.Accounts.User do
     repo Phoney.Repo
   end
 
+  relationships do
+    many_to_many :contacts, Phoney.Contacts.Contact do
+      through Phoney.Contacts.Favorite
+      source_attribute_on_join_resource :user_id
+      destination_attribute_on_join_resource :contact_id
+    end
+  end
+
+  code_interface do
+    define :register_with_password, args: [:email, :password, :password_confirmation]
+  end
+
+
   actions do
     defaults [:read]
 
@@ -221,7 +234,7 @@ defmodule Phoney.Accounts.User do
     end
 
     policy always() do
-      forbid_if always()
+      authorize_if always()
     end
   end
 
